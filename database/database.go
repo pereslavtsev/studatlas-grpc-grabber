@@ -2,10 +2,12 @@ package database
 
 import (
 	"context"
+
+	"grabber/config"
+
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"grabber/config"
 )
 
 type contextKeyType string
@@ -27,12 +29,12 @@ func Init(ctx context.Context) context.Context {
 	clientOptions := options.Client().ApplyURI(cfg.MongoURI)
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 
 	return context.WithValue(ctx, contextKey, &DB{
