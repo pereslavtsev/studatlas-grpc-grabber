@@ -40,6 +40,7 @@ func Init(ctx context.Context) context.Context {
 	s := grpc.NewServer(grpc.UnaryInterceptor(unaryInterceptor))
 
 	pb.RegisterAcademyServiceServer(s, services.NewAcademyServiceGrpcImpl(ctx))
+	pb.RegisterDivisionServiceServer(s, services.NewDivisionServiceGrpcImpl(ctx))
 	pb.RegisterFacultyServiceServer(s, services.NewFacultyServiceGrpcImpl(ctx))
 
 	// Register reflection service on gRPC server.
