@@ -4,52 +4,49 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	m "grabber/models"
 
-	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (db *DB) GetAcademies() ([]*m.Academy, int, error) {
 	collection := db.database.Collection("academies")
-
 	var academies []*m.Academy
-
 	cur, err := collection.Find(db.ctx, bson.D{{}})
 
-	if err != nil || cur == nil {
-		log.Fatal(err)
+	if err != nil {
 		return nil, 0, err
 	}
 
 	for cur.Next(db.ctx) {
 		var t m.Academy
-		err := cur.Decode(&t)
-		if err != nil {
-			log.Error(err)
+		if err := cur.Decode(&t); err != nil {
+			return nil, 0, err
 		}
 		academies = append(academies, &t)
 	}
 
 	// once exhausted, close the cursor
-	cur.Close(db.ctx)
-
-	if len(academies) == 0 {
-		log.Warn("No academies founded")
+	if err = cur.Close(db.ctx); err != nil {
+		return academies, len(academies), err
 	}
 
 	return academies, len(academies), nil
 }
 
-func (db *DB) GetAcademy(id string) (m.Academy, error) {
+func (db *DB) GetAcademy(id string) (*m.Academy, error) {
 	collection := db.database.Collection("academies")
-	objID, _ := primitive.ObjectIDFromHex(id)
+	objID, err := primitive.ObjectIDFromHex(id)
 
-	var academy m.Academy
-	err := collection.FindOne(db.ctx, bson.M{
+	if err != nil {
+		return nil, err
+	}
+
+	var academy *m.Academy
+	err = collection.FindOne(db.ctx, bson.M{
 		"_id": objID,
 	}).Decode(&academy)
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	return academy, nil

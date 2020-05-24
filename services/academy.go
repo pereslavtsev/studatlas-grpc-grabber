@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"grabber/database"
+	m "grabber/models"
 	pb "grabber/pb"
 
 	log "github.com/sirupsen/logrus"
@@ -19,18 +20,12 @@ func NewAcademyServiceGrpcImpl(ctx context.Context) *AcademyServiceGrpcImpl {
 	}
 }
 
-func (serviceImpl *AcademyServiceGrpcImpl) GetAcademy(ctx context.Context, in *pb.GetAcademyRequest) (*pb.Academy, error) {
-	db := database.FromContext(serviceImpl.ctx)
-	res, _ := db.GetAcademy(in.Id)
-
-	log.Debug("Received academy", res.ID)
-
+func serializeAcademy(res *m.Academy) *pb.Academy {
 	isDisabled := 0
 
 	if res.IsDisabled {
 		isDisabled = 1
 	}
-
 	return &pb.Academy{
 		Id:              res.ID.Hex(),
 		Name:            res.Name,
@@ -41,35 +36,40 @@ func (serviceImpl *AcademyServiceGrpcImpl) GetAcademy(ctx context.Context, in *p
 		Version:         res.Version,
 		DisabledSources: res.DisabledSources,
 		IsDisabled:      int32(isDisabled),
-	}, nil
+	}
+}
+
+func (serviceImpl *AcademyServiceGrpcImpl) GetAcademy(ctx context.Context, in *pb.GetAcademyRequest) (*pb.Academy, error) {
+	db := database.FromContext(serviceImpl.ctx)
+
+	res, err := db.GetAcademy(in.Id)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	return serializeAcademy(res), nil
 }
 
 func (serviceImpl *AcademyServiceGrpcImpl) ListAcademies(ctx context.Context, in *pb.ListAcademiesRequest) (*pb.ListAcademiesResponse, error) {
 	db := database.FromContext(serviceImpl.ctx)
-	academies, _, _ := db.GetAcademies()
+	res, count, err := db.GetAcademies()
 
-	var res []*pb.Academy
+	if count == 0 {
+		log.Warn("No academies founded")
+	}
 
-	for _, t := range academies {
-		isDisabled := 0
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
 
-		if t.IsDisabled {
-			isDisabled = 1
-		}
+	var academies []*pb.Academy
 
-		res = append(res, &pb.Academy{
-			Id:              t.ID.Hex(),
-			Name:            t.Name,
-			Abbreviation:    t.Abbreviation,
-			Alias:           t.Alias,
-			Website:         t.Website,
-			Endpoint:        t.Endpoint,
-			Version:         t.Version,
-			DisabledSources: t.DisabledSources,
-			IsDisabled:      int32(isDisabled),
-		})
+	for _, t := range res {
+		academies = append(academies, serializeAcademy(t))
 	}
 	return &pb.ListAcademiesResponse{
-		Data: res,
+		Data: academies,
 	}, nil
 }

@@ -13,12 +13,14 @@ var contextKey = contextKeyType("config")
 
 // Config is the config operations wrapper
 type Config struct {
+	Address  string
 	MongoURI string
 }
 
 func Init(ctx context.Context) context.Context {
 	log.Infof(`Init %s...`, contextKey)
 	// set defaults
+	v.SetDefault("address", ":50051")
 	v.SetDefault("mongo_uri", "mongodb://localhost:27020/test")
 
 	v.SetConfigName(".env")
@@ -31,6 +33,7 @@ func Init(ctx context.Context) context.Context {
 	}
 
 	return context.WithValue(ctx, contextKey, &Config{
+		Address:  v.GetString("address"),
 		MongoURI: v.GetString("mongo_uri"),
 	})
 }
@@ -39,7 +42,7 @@ func Init(ctx context.Context) context.Context {
 func FromContext(ctx context.Context) *Config {
 	cfg, ok := ctx.Value(contextKey).(*Config)
 	if !ok {
-		log.Panicf("calling config.FromContext from a non-database context")
+		log.Fatal("calling config.FromContext from a non-database context")
 	}
 	return cfg
 }

@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package grabber;
+
+service FacultyService {
+    rpc GetFaculty (GetFacultyRequest) returns (Faculty) {}
+    rpc ListFaculties (ListFacultiesRequest) returns (ListFacultiesResponse) {}
+}
+
+message GetFacultyRequest {
+    int32 id = 1;
+    string academy_id = 2;
+}
+
+message Faculty {
+    int32 id = 1;
+    string name = 2;
+    string abbreviation = 3;
+    string head = 4;
+    string phone = 5;
+    string room = 6;
+}
+
+message ListFacultiesRequest {
+    string academy_id = 1;
+    int32 page = 2;
+}
+
+message Meta {
+    message Page {
+        int32 page = 1;
+        int32 allPages = 2;
+        int32 limit = 3;
+        int32 total = 4;
+    }
+    Page page = 1;
+}
+
+message ListFacultiesResponse {
+    repeated Faculty data = 1;
+    Meta meta = 2;
+}

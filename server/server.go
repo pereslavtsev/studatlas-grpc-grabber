@@ -2,8 +2,8 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"google.golang.org/grpc/metadata"
+	"grabber/config"
 	"net"
 
 	pb "grabber/pb"
@@ -20,8 +20,8 @@ var contextKey = contextKeyType("server")
 
 // Server is the gRPC-server operations wrapper
 type Server struct {
-	ctx        	context.Context
-	server  	*grpc.Server
+	ctx    context.Context
+	server *grpc.Server
 }
 
 func unaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -39,8 +39,8 @@ func Init(ctx context.Context) context.Context {
 
 	s := grpc.NewServer(grpc.UnaryInterceptor(unaryInterceptor))
 
-	repositoryServiceImpl := services.NewAcademyServiceGrpcImpl(ctx)
-	pb.RegisterAcademyServiceServer(s, repositoryServiceImpl)
+	pb.RegisterAcademyServiceServer(s, services.NewAcademyServiceGrpcImpl(ctx))
+	pb.RegisterFacultyServiceServer(s, services.NewFacultyServiceGrpcImpl(ctx))
 
 	// Register reflection service on gRPC server.
 	reflection.Register(s)
@@ -56,25 +56,19 @@ func FromContext(ctx context.Context) *Server {
 	db, ok := ctx.Value(contextKey).(*Server)
 	//log.WithField("ctx", ctx).Debug("ctx")
 	if !ok {
-		panic(fmt.Errorf("calling server.FromContext from a non-database context"))
+		log.Fatal("calling server.FromContext from a non-database context")
 	}
 	return db
 }
 
 func (s *Server) Start() {
 	log.Infof(`Starting %s...`, contextKey)
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", config.FromContext(s.ctx).Address)
 	if err != nil {
 		log.Errorf("failed to listen: %v", err)
 	}
 	log.WithContext(s.ctx).Infof("Listen on %s", lis.Addr())
 	if err := s.server.Serve(lis); err != nil {
-		log.Errorf("failed to serve: %v", err)
+		log.Fatal("failed to serve: %v", err)
 	}
 }
-
-
-
-
-
-
