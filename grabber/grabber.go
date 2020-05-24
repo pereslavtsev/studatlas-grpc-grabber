@@ -3,6 +3,7 @@ package grabber
 import (
 	"bytes"
 	"context"
+	"github.com/PuerkitoBio/goquery"
 	"io/ioutil"
 	"net/http"
 
@@ -78,4 +79,15 @@ func (grabber *Grabber) Do(req *http.Request) (*http.Response, error) {
 	res.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
 	return res, nil
+}
+
+func (grabber *Grabber) GetDoc(req *http.Request) (*goquery.Document, error) {
+	res, err := grabber.Do(req)
+
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	return goquery.NewDocumentFromReader(res.Body)
 }

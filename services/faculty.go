@@ -20,9 +20,20 @@ func NewFacultyServiceGrpcImpl(ctx context.Context) *FacultyServiceGrpcImpl {
 	}
 }
 
-func (serviceImpl *FacultyServiceGrpcImpl) GetFaculty(_ context.Context, _ *pb.GetFacultyRequest) (*pb.Faculty, error) {
-	var faculties *pb.Faculty
-	return faculties, nil
+func (serviceImpl *FacultyServiceGrpcImpl) GetFaculty(_ context.Context, in *pb.GetFacultyRequest) (*pb.Faculty, error) {
+	db := database.FromContext(serviceImpl.ctx)
+	academy, err := db.GetAcademy(in.AcademyId)
+
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	g := grabber.FromContext(serviceImpl.ctx)
+
+	faculty, err := g.GetFacultyById(academy, in.Id)
+
+	return faculty, nil
 }
 
 func (serviceImpl *FacultyServiceGrpcImpl) ListFaculties(_ context.Context, in *pb.ListFacultiesRequest) (*pb.ListFacultiesResponse, error) {
@@ -36,7 +47,7 @@ func (serviceImpl *FacultyServiceGrpcImpl) ListFaculties(_ context.Context, in *
 
 	g := grabber.FromContext(serviceImpl.ctx)
 
-	faculties, err := g.GetFaculties(academy)
+	faculties, err := g.GetFaculties(academy, -1)
 
 	return &pb.ListFacultiesResponse{
 		Data: faculties,

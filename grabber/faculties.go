@@ -1,16 +1,59 @@
 package grabber
 
 import (
+	"fmt"
 	"net/http"
 
 	"grabber/models"
 	pb "grabber/pb"
 
-	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
 )
 
-func (grabber *Grabber) GetFaculties(academy *models.Academy) ([]*pb.Faculty, error) {
+var schema = map[string]*Property{
+	"id": {
+		Type:    "id",
+		Columns: []string{"Факультет", "Институт"},
+	},
+	"name": {
+		Type:    "text",
+		Columns: []string{"Факультет", "Институт"},
+	},
+	"abbreviation": {
+		Type:   "text",
+		Column: "Сокращение",
+	},
+	"head": {
+		Type:   "text",
+		Column: "Декан",
+	},
+	"phone": {
+		Type:   "text",
+		Column: "Телефон",
+	},
+	"room": {
+		Type:   "text",
+		Column: "Аудитория",
+	},
+}
+
+func (grabber *Grabber) GetFacultyById(academy *models.Academy, id int32) (*pb.Faculty, error) {
+	faculties, err := grabber.GetFaculties(academy, id)
+
+	if err != nil {
+		log.Error()
+		return nil, err
+	}
+
+	if len(faculties) == 0 {
+		log.Error()
+		return nil, err
+	}
+
+	return faculties[0], nil
+}
+
+func (grabber *Grabber) GetFaculties(academy *models.Academy, id int32) ([]*pb.Faculty, error) {
 	req, err := http.NewRequest(http.MethodGet, academy.Endpoint, nil)
 
 	if err != nil {
@@ -21,50 +64,20 @@ func (grabber *Grabber) GetFaculties(academy *models.Academy) ([]*pb.Faculty, er
 	req.URL.Path = "/Dek/Default.aspx"
 	q := req.URL.Query()
 	q.Add("mode", "facultet")
+	q.Add("f", "facultet")
+	if id != -1 {
+		q.Add("id", fmt.Sprint(id))
+	}
 	req.URL.RawQuery = q.Encode()
 
-	res, err := grabber.Do(req)
-
+	doc, err := grabber.GetDoc(req)
 	if err != nil {
 		log.Error(err)
-		return nil, err
-	}
-
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	var faculties []*pb.Faculty
 
-	table := doc.Find("table#ContentPage_ucFacultets_Grid").First()
-
-	schema := map[string]*Property{
-		"id": {
-			Type:    "id",
-			Columns: []string{"Факультет", "Институт"},
-		},
-		"name": {
-			Type:    "text",
-			Columns: []string{"Факультет", "Институт"},
-		},
-		"abbreviation": {
-			Type:   "text",
-			Column: "Сокращение",
-		},
-		"head": {
-			Type:   "text",
-			Column: "Декан",
-		},
-		"phone": {
-			Type:   "text",
-			Column: "Телефон",
-		},
-		"room": {
-			Type:   "text",
-			Column: "Аудитория",
-		},
-	}
+	table := doc.Find("table#ContentPage_ucFacultets_Grid")
 
 	NewGrid(table, schema).EachRow(func(i int, row *Row) {
 		faculties = append(faculties, &pb.Faculty{
