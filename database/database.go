@@ -10,9 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type contextKeyType string
-
-var contextKey = contextKeyType("database")
+var contextKey = "database"
 
 // DB is the database operations wrapper
 type DB struct {

@@ -2,15 +2,16 @@ package server
 
 import (
 	"context"
-	"google.golang.org/grpc/metadata"
-	"grabber/config"
 	"net"
 
+	"grabber/config"
+	"grabber/database"
 	pb "grabber/pb"
 	"grabber/services"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -24,10 +25,36 @@ type Server struct {
 	server *grpc.Server
 }
 
-func unaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+func (s *Server) UnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	// authentication (token verification)
-	_, _ = metadata.FromIncomingContext(ctx)
-	log.WithField("req", req).Infof("Request method: %s", info.FullMethod)
+	md, ok := metadata.FromIncomingContext(ctx)
+
+	if !ok {
+		log.Error("metadata.FromIncomingContext")
+	}
+
+	db := database.FromContext(s.ctx)
+	ctx = context.WithValue(ctx, "database", db) // pass DB to the context
+
+	switch info.FullMethod {
+	case "/grabber.AcademyService/GetAcademy":
+	case "/grabber.AcademyService/ListAcademies":
+		break
+	default:
+		if len(md.Get("academy_id")) == 0 {
+			log.Error(`Request has no "academy_id" parameter in a request metadata"`)
+			return nil, nil
+		}
+
+		// Pass an academy instance to the context
+		academy, _ := db.GetAcademy(md.Get("academy_id")[0])
+		ctx = context.WithValue(ctx, "academy", academy)
+	}
+
+	log.WithFields(log.Fields{
+		"req": req,
+		//"metadata": md,
+	}).Infof("Request method: %s", info.FullMethod)
 
 	m, err := handler(ctx, req)
 	return m, err
@@ -37,19 +64,22 @@ func unaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServ
 func Init(ctx context.Context) context.Context {
 	log.Infof(`Init %s...`, contextKey)
 
-	s := grpc.NewServer(grpc.UnaryInterceptor(unaryInterceptor))
+	val := &Server{
+		ctx: ctx,
+	}
 
-	pb.RegisterAcademyServiceServer(s, services.NewAcademyServiceGrpcImpl(ctx))
+	s := grpc.NewServer(grpc.UnaryInterceptor(val.UnaryInterceptor))
+
+	pb.RegisterAcademyServiceServer(s, services.NewAcademyServiceGrpcImpl())
 	pb.RegisterDivisionServiceServer(s, services.NewDivisionServiceGrpcImpl(ctx))
 	pb.RegisterFacultyServiceServer(s, services.NewFacultyServiceGrpcImpl(ctx))
 
 	// Register reflection service on gRPC server.
 	reflection.Register(s)
 
-	return context.WithValue(ctx, contextKey, &Server{
-		ctx:    ctx,
-		server: s,
-	})
+	val.server = s
+
+	return context.WithValue(ctx, contextKey, val)
 }
 
 // FromContext returns the server wrapper from a given context.

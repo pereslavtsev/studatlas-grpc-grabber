@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"github.com/PuerkitoBio/goquery"
+	"grabber/models"
 	"io/ioutil"
 	"net/http"
 
@@ -11,9 +12,7 @@ import (
 	"golang.org/x/net/html/charset"
 )
 
-type contextKeyType string
-
-var contextKey = contextKeyType("grabber")
+var contextKey = "grabber"
 
 // Grabber is the database operations wrapper
 type Grabber struct {
@@ -90,4 +89,22 @@ func (grabber *Grabber) GetDoc(req *http.Request) (*goquery.Document, error) {
 	}
 
 	return goquery.NewDocumentFromReader(res.Body)
+}
+
+func (grabber *Grabber) DoDictionaryReq(academy *models.Academy, params map[string]string) (*goquery.Document, error) {
+	req, err := http.NewRequest(http.MethodGet, academy.Endpoint, nil)
+
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	req.URL.Path = "/Dek/Default.aspx"
+	q := req.URL.Query()
+	for k, v := range params {
+		q.Add(k, v)
+	}
+	req.URL.RawQuery = q.Encode()
+
+	return grabber.GetDoc(req)
 }

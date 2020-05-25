@@ -7,9 +7,7 @@ import (
 	v "github.com/spf13/viper"
 )
 
-type contextKeyType string
-
-var contextKey = contextKeyType("config")
+var contextKey = "config"
 
 // Config is the config operations wrapper
 type Config struct {

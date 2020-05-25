@@ -10,14 +10,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type AcademyServiceGrpcImpl struct {
-	ctx context.Context
-}
+type AcademyServiceGrpcImpl struct{}
 
-func NewAcademyServiceGrpcImpl(ctx context.Context) *AcademyServiceGrpcImpl {
-	return &AcademyServiceGrpcImpl{
-		ctx: ctx,
-	}
+func NewAcademyServiceGrpcImpl() *AcademyServiceGrpcImpl {
+	return &AcademyServiceGrpcImpl{}
 }
 
 func serializeAcademy(res *m.Academy) *pb.Academy {
@@ -40,7 +36,7 @@ func serializeAcademy(res *m.Academy) *pb.Academy {
 }
 
 func (serviceImpl *AcademyServiceGrpcImpl) GetAcademy(ctx context.Context, in *pb.GetAcademyRequest) (*pb.Academy, error) {
-	db := database.FromContext(serviceImpl.ctx)
+	db := database.FromContext(ctx)
 
 	res, err := db.GetAcademy(in.Id)
 	if err != nil {
@@ -52,7 +48,7 @@ func (serviceImpl *AcademyServiceGrpcImpl) GetAcademy(ctx context.Context, in *p
 }
 
 func (serviceImpl *AcademyServiceGrpcImpl) ListAcademies(ctx context.Context, in *pb.ListAcademiesRequest) (*pb.ListAcademiesResponse, error) {
-	db := database.FromContext(serviceImpl.ctx)
+	db := database.FromContext(ctx)
 	res, count, err := db.GetAcademies()
 
 	if count == 0 {

@@ -23,7 +23,7 @@ func (row *Row) GetSpecificId(key string, param string) int32 {
 	cell := row.Columns.Eq(row.Grid.ColumnsOrder[key])
 	val, exists := cell.Find("a").Attr("href")
 	if !exists {
-		log.Warnf(`Link hasn't founded, used text value "%s" instead`, cell.Text())
+		//log.Warnf(`Link hasn't founded, used text value "%s" instead`, cell.Text())
 		i, _ := strconv.ParseInt(cell.Text(), 10, 32)
 		return int32(i)
 	}

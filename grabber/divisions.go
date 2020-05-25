@@ -5,7 +5,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"grabber/models"
 	pb "grabber/pb"
-	"net/http"
 )
 
 var schemaDivision = map[string]*Property{
@@ -52,23 +51,17 @@ func (grabber *Grabber) GetDivisionById(academy *models.Academy, id int32) (*pb.
 }
 
 func (grabber *Grabber) GetDivisions(academy *models.Academy, id int32) ([]*pb.Division, error) {
-	req, err := http.NewRequest(http.MethodGet, academy.Endpoint, nil)
-
-	if err != nil {
-		log.Fatal(err)
-		return nil, err
+	params := map[string]string{
+		"mode": "kaf",
+		"f":    "kaf",
 	}
 
-	req.URL.Path = "/Dek/Default.aspx"
-	q := req.URL.Query()
-	q.Add("mode", "kaf")
-	q.Add("f", "kaf")
 	if id != -1 {
-		q.Add("id", fmt.Sprint(id))
+		params["id"] = fmt.Sprint(id)
 	}
-	req.URL.RawQuery = q.Encode()
 
-	doc, err := grabber.GetDoc(req)
+	doc, err := grabber.DoDictionaryReq(academy, params)
+
 	if err != nil {
 		log.Error(err)
 	}

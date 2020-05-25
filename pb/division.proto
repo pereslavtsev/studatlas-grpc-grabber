@@ -9,7 +9,6 @@ service DivisionService {
 
 message GetDivisionRequest {
     int32 id = 1;
-    string academy_id = 2;
 }
 
 message Division {
@@ -21,9 +20,7 @@ message Division {
     string room = 6;
 }
 
-message ListDivisionsRequest {
-    string academy_id = 1;
-}
+message ListDivisionsRequest {}
 
 message ListDivisionsResponse {
     repeated Division data = 1;

@@ -3,11 +3,9 @@ package services
 import (
 	"context"
 
-	"grabber/database"
 	"grabber/grabber"
+	"grabber/models"
 	pb "grabber/pb"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type DivisionServiceGrpcImpl struct {
@@ -20,34 +18,19 @@ func NewDivisionServiceGrpcImpl(ctx context.Context) *DivisionServiceGrpcImpl {
 	}
 }
 
-func (serviceImpl *DivisionServiceGrpcImpl) GetDivision(_ context.Context, in *pb.GetDivisionRequest) (*pb.Division, error) {
-	db := database.FromContext(serviceImpl.ctx)
-	academy, err := db.GetAcademy(in.AcademyId)
-
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
+func (serviceImpl *DivisionServiceGrpcImpl) GetDivision(ctx context.Context, in *pb.GetDivisionRequest) (*pb.Division, error) {
+	academy := ctx.Value("academy").(*models.Academy)
 	g := grabber.FromContext(serviceImpl.ctx)
 
-	division, err := g.GetDivisionById(academy, in.Id)
+	division, _ := g.GetDivisionById(academy, in.Id)
 
 	return division, nil
 }
 
-func (serviceImpl *DivisionServiceGrpcImpl) ListDivisions(_ context.Context, in *pb.ListDivisionsRequest) (*pb.ListDivisionsResponse, error) {
-	db := database.FromContext(serviceImpl.ctx)
-	academy, err := db.GetAcademy(in.AcademyId)
-
-	if err != nil {
-		log.Error(err)
-		return nil, err
-	}
-
+func (serviceImpl *DivisionServiceGrpcImpl) ListDivisions(ctx context.Context, _ *pb.ListDivisionsRequest) (*pb.ListDivisionsResponse, error) {
+	academy := ctx.Value("academy").(*models.Academy)
 	g := grabber.FromContext(serviceImpl.ctx)
-
-	divisions, err := g.GetDivisions(academy, -1)
+	divisions, _ := g.GetDivisions(academy, -1)
 
 	return &pb.ListDivisionsResponse{
 		Data: divisions,

@@ -9,7 +9,6 @@ service FacultyService {
 
 message GetFacultyRequest {
     int32 id = 1;
-    string academy_id = 2;
 }
 
 message Faculty {
@@ -22,7 +21,6 @@ message Faculty {
 }
 
 message ListFacultiesRequest {
-    string academy_id = 1;
     int32 page = 2;
 }
 

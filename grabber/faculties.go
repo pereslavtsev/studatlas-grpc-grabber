@@ -2,7 +2,6 @@ package grabber
 
 import (
 	"fmt"
-	"net/http"
 
 	"grabber/models"
 	pb "grabber/pb"
@@ -54,23 +53,17 @@ func (grabber *Grabber) GetFacultyById(academy *models.Academy, id int32) (*pb.F
 }
 
 func (grabber *Grabber) GetFaculties(academy *models.Academy, id int32) ([]*pb.Faculty, error) {
-	req, err := http.NewRequest(http.MethodGet, academy.Endpoint, nil)
-
-	if err != nil {
-		log.Fatal(err)
-		return nil, err
+	params := map[string]string{
+		"mode": "facultet",
+		"f":    "facultet",
 	}
 
-	req.URL.Path = "/Dek/Default.aspx"
-	q := req.URL.Query()
-	q.Add("mode", "facultet")
-	q.Add("f", "facultet")
 	if id != -1 {
-		q.Add("id", fmt.Sprint(id))
+		params["id"] = fmt.Sprint(id)
 	}
-	req.URL.RawQuery = q.Encode()
 
-	doc, err := grabber.GetDoc(req)
+	doc, err := grabber.DoDictionaryReq(academy, params)
+
 	if err != nil {
 		log.Error(err)
 	}
