@@ -31,7 +31,7 @@ func (serviceImpl *FacultyServiceGrpcImpl) ListFaculties(ctx context.Context, _ 
 	academy := ctx.Value("academy").(*models.Academy)
 	g := grabber.FromContext(serviceImpl.ctx)
 
-	faculties, _ := g.GetFaculties(academy, -1)
+	faculties, _ := g.GetFaculties(academy)
 
 	return &pb.ListFacultiesResponse{
 		Data: faculties,

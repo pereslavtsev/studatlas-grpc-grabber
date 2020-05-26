@@ -1,8 +1,6 @@
 package grabber
 
 import (
-	"fmt"
-
 	"grabber/models"
 	pb "grabber/pb"
 
@@ -36,33 +34,8 @@ var schema = map[string]*Property{
 	},
 }
 
-func (grabber *Grabber) GetFacultyById(academy *models.Academy, id int32) (*pb.Faculty, error) {
-	faculties, err := grabber.GetFaculties(academy, id)
-
-	if err != nil {
-		log.Error()
-		return nil, err
-	}
-
-	if len(faculties) == 0 {
-		log.Error()
-		return nil, err
-	}
-
-	return faculties[0], nil
-}
-
-func (grabber *Grabber) GetFaculties(academy *models.Academy, id int32) ([]*pb.Faculty, error) {
-	params := map[string]string{
-		"mode": "facultet",
-		"f":    "facultet",
-	}
-
-	if id != -1 {
-		params["id"] = fmt.Sprint(id)
-	}
-
-	doc, err := grabber.DoDictionaryReq(academy, params)
+func (g *Grabber) FetchFaculties(academy *models.Academy, params *DictionaryFilter) ([]*pb.Faculty, error) {
+	doc, err := g.DoDictionaryReq(academy, params)
 
 	if err != nil {
 		log.Error(err)
@@ -84,4 +57,32 @@ func (grabber *Grabber) GetFaculties(academy *models.Academy, id int32) ([]*pb.F
 	})
 
 	return faculties, nil
+}
+
+func (g *Grabber) GetFacultyById(academy *models.Academy, id int32) (*pb.Faculty, error) {
+	faculties, err := g.FetchFaculties(academy, &DictionaryFilter{
+		Mode:   "facultet",
+		Filter: "facultet",
+		ID:     id,
+	})
+
+	if err != nil {
+		log.Error()
+		return nil, err
+	}
+
+	if len(faculties) == 0 {
+		log.Errorf(`Faculty with ID "%i" has not found`, id)
+		return nil, err
+	}
+
+	return faculties[0], err
+}
+
+func (g *Grabber) GetFaculties(academy *models.Academy) ([]*pb.Faculty, error) {
+	faculties, err := g.FetchFaculties(academy, &DictionaryFilter{
+		Mode:   "facultet",
+		Filter: "facultet",
+	})
+	return faculties, err
 }

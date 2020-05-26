@@ -3,11 +3,13 @@ package grabber
 import (
 	"bytes"
 	"context"
-	"github.com/PuerkitoBio/goquery"
-	"grabber/models"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
+	"grabber/models"
+
+	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/html/charset"
 )
@@ -18,6 +20,12 @@ var contextKey = "grabber"
 type Grabber struct {
 	ctx    context.Context
 	client *http.Client
+}
+
+type DictionaryFilter struct {
+	Mode   string
+	Filter string
+	ID     int32
 }
 
 // Init initializes the grabber wrapper and create a new value context with the object in it.
@@ -31,14 +39,14 @@ func Init(ctx context.Context) context.Context {
 
 // FromContext returns the database wrapper from a given context.
 func FromContext(ctx context.Context) *Grabber {
-	db, ok := ctx.Value(contextKey).(*Grabber)
+	g, ok := ctx.Value(contextKey).(*Grabber)
 	if !ok {
 		log.Panic("Calling grabber.FromContext from a non-grabber context")
 	}
-	return db
+	return g
 }
 
-func (grabber *Grabber) Do(req *http.Request) (*http.Response, error) {
+func (g *Grabber) Do(req *http.Request) (*http.Response, error) {
 	// log a http.Request instance
 	log.WithFields(log.Fields{
 		"method": req.Method,
@@ -47,7 +55,7 @@ func (grabber *Grabber) Do(req *http.Request) (*http.Response, error) {
 	}).Debugf("Sending a request to \"%s\"...", req.URL.Hostname())
 
 	// receive a response
-	res, err := grabber.client.Do(req)
+	res, err := g.client.Do(req)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
@@ -80,8 +88,8 @@ func (grabber *Grabber) Do(req *http.Request) (*http.Response, error) {
 	return res, nil
 }
 
-func (grabber *Grabber) GetDoc(req *http.Request) (*goquery.Document, error) {
-	res, err := grabber.Do(req)
+func (g *Grabber) GetDoc(req *http.Request) (*goquery.Document, error) {
+	res, err := g.Do(req)
 
 	if err != nil {
 		log.Error(err)
@@ -91,7 +99,7 @@ func (grabber *Grabber) GetDoc(req *http.Request) (*goquery.Document, error) {
 	return goquery.NewDocumentFromReader(res.Body)
 }
 
-func (grabber *Grabber) DoDictionaryReq(academy *models.Academy, params map[string]string) (*goquery.Document, error) {
+func (g *Grabber) DoDictionaryReq(academy *models.Academy, params *DictionaryFilter) (*goquery.Document, error) {
 	req, err := http.NewRequest(http.MethodGet, academy.Endpoint, nil)
 
 	if err != nil {
@@ -101,10 +109,12 @@ func (grabber *Grabber) DoDictionaryReq(academy *models.Academy, params map[stri
 
 	req.URL.Path = "/Dek/Default.aspx"
 	q := req.URL.Query()
-	for k, v := range params {
-		q.Add(k, v)
-	}
+
+	q.Add("mode", params.Mode)
+	q.Add("f", params.Filter)
+	q.Add("id", fmt.Sprint(params.ID))
+
 	req.URL.RawQuery = q.Encode()
 
-	return grabber.GetDoc(req)
+	return g.GetDoc(req)
 }

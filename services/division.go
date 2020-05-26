@@ -30,7 +30,7 @@ func (serviceImpl *DivisionServiceGrpcImpl) GetDivision(ctx context.Context, in 
 func (serviceImpl *DivisionServiceGrpcImpl) ListDivisions(ctx context.Context, _ *pb.ListDivisionsRequest) (*pb.ListDivisionsResponse, error) {
 	academy := ctx.Value("academy").(*models.Academy)
 	g := grabber.FromContext(serviceImpl.ctx)
-	divisions, _ := g.GetDivisions(academy, -1)
+	divisions, _ := g.GetDivisions(academy)
 
 	return &pb.ListDivisionsResponse{
 		Data: divisions,

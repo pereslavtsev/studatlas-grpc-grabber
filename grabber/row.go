@@ -17,6 +17,12 @@ type Row struct {
 
 func (row *Row) GetId(key string) int32 {
 	return row.GetSpecificId(key, "id")
+
+}
+
+func (row *Row) GetInt32(key string) int32 {
+	i, _ := strconv.ParseInt(row.Get(key), 10, 32)
+	return int32(i)
 }
 
 func (row *Row) GetSpecificId(key string, param string) int32 {

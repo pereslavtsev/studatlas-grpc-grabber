@@ -15,9 +15,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-type contextKeyType string
-
-var contextKey = contextKeyType("server")
+var contextKey = "server"
 
 // Server is the gRPC-server operations wrapper
 type Server struct {
@@ -26,11 +24,11 @@ type Server struct {
 }
 
 func (s *Server) UnaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-	// authentication (token verification)
 	md, ok := metadata.FromIncomingContext(ctx)
 
 	if !ok {
 		log.Error("metadata.FromIncomingContext")
+		return nil, nil
 	}
 
 	db := database.FromContext(s.ctx)
@@ -73,6 +71,7 @@ func Init(ctx context.Context) context.Context {
 	pb.RegisterAcademyServiceServer(s, services.NewAcademyServiceGrpcImpl())
 	pb.RegisterDivisionServiceServer(s, services.NewDivisionServiceGrpcImpl(ctx))
 	pb.RegisterFacultyServiceServer(s, services.NewFacultyServiceGrpcImpl(ctx))
+	pb.RegisterGroupServiceServer(s, services.NewGroupServiceGrpcImpl(ctx))
 
 	// Register reflection service on gRPC server.
 	reflection.Register(s)
@@ -85,7 +84,6 @@ func Init(ctx context.Context) context.Context {
 // FromContext returns the server wrapper from a given context.
 func FromContext(ctx context.Context) *Server {
 	db, ok := ctx.Value(contextKey).(*Server)
-	//log.WithField("ctx", ctx).Debug("ctx")
 	if !ok {
 		log.Fatal("calling server.FromContext from a non-database context")
 	}
