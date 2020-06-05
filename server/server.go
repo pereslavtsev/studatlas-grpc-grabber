@@ -2,17 +2,16 @@ package server
 
 import (
 	"context"
-	"net"
-
-	"grabber/config"
-	"grabber/database"
-	pb "grabber/pb"
 	"grabber/services"
+	"net"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
+	"grabber/config"
+	"grabber/database"
+	pb "grabber/pb"
 )
 
 var contextKey = "server"
@@ -72,6 +71,7 @@ func Init(ctx context.Context) context.Context {
 	pb.RegisterDivisionServiceServer(s, services.NewDivisionServiceGrpcImpl(ctx))
 	pb.RegisterFacultyServiceServer(s, services.NewFacultyServiceGrpcImpl(ctx))
 	pb.RegisterGroupServiceServer(s, services.NewGroupServiceGrpcImpl(ctx))
+	pb.RegisterReportServiceServer(s, services.NewReportServiceGrpcImpl(ctx))
 	pb.RegisterSpecialityServiceServer(s, services.NewSpecialityServiceGrpcImpl(ctx))
 
 	// Register reflection service on gRPC server.

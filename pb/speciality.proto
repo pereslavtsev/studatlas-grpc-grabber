@@ -13,15 +13,15 @@ message GetSpecialityRequest {
 }
 
 message Speciality {
-    int32 id = 1;
-    string shortName = 2;
-    string name = 3;
-    string code = 4;
-    string qualification = 5;
-    int32 division_id = 6;
-    string division = 7;
-    int32 faculty_id = 8;
-    string faculty = 9;
+    int32   id              = 1;
+    string  shortName       = 2;
+    string  name            = 3;
+    string  code            = 4;
+    string  qualification   = 5;
+    int32   division_id     = 6;
+    string  division        = 7;
+    int32   faculty_id      = 8;
+    string  faculty         = 9;
 }
 
 message ListSpecialitiesRequest {}

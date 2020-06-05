@@ -3,6 +3,7 @@ package grabber
 import (
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
+	"strings"
 )
 
 type Property struct {
@@ -18,7 +19,7 @@ type Grid struct {
 }
 
 func NewGrid(Nodes *goquery.Selection, Schema map[string]*Property) *Grid {
-	columns := Nodes.Find(".TblHead > td").Map(func(i int, s *goquery.Selection) string {
+	columns := Nodes.Find(".TblHead > td,th").Map(func(i int, s *goquery.Selection) string {
 		return s.Text()
 	})
 
@@ -27,7 +28,7 @@ func NewGrid(Nodes *goquery.Selection, Schema map[string]*Property) *Grid {
 		matched := false
 		if v.Column != "" {
 			for i, c := range columns {
-				if v.Column == c {
+				if strings.ToLower(v.Column) == strings.ToLower(c) {
 					columnsOrder[k] = i
 					matched = true
 					break
@@ -36,7 +37,7 @@ func NewGrid(Nodes *goquery.Selection, Schema map[string]*Property) *Grid {
 		} else if len(v.Columns) != 0 {
 			for _, t := range v.Columns {
 				for i, c := range columns {
-					if t == c {
+					if strings.ToLower(t) == strings.ToLower(c) {
 						columnsOrder[k] = i
 						matched = true
 						break

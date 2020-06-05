@@ -33,13 +33,17 @@ func (row *Row) GetSpecificId(key string, param string) int32 {
 		i, _ := strconv.ParseInt(cell.Text(), 10, 32)
 		return int32(i)
 	}
-	u, err := url.ParseQuery(val)
+	u, err := url.Parse(val)
 	if err != nil || u == nil {
 		log.Error()
 		return -1
 	}
 
-	i, _ := strconv.ParseInt(u.Get(param), 10, 32)
+	if u.Query().Get("group") == "" {
+		log.Warnf(`No ID in the url: %s`, u.RequestURI())
+	}
+
+	i, _ := strconv.ParseInt(u.Query().Get("group"), 10, 32)
 	return int32(i)
 }
 

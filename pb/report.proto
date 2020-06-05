@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package grabber;
+
+service ReportService {
+    rpc ListFacultyReports (ListFacultyReportsRequest) returns (ListReportsResponse) {}
+}
+
+message Report {
+    int32   id            = 1;
+    string  name          = 2;
+    string  year          = 3;
+    string  speciality    = 4;
+    int32   count         = 5;
+    string  curricula     = 6;
+}
+
+message ListFacultyReportsRequest {
+    int32   faculty_id    = 2;
+    string  years         = 3;
+}
+
+message ListReportsResponse {
+    repeated Report data = 1;
+}
