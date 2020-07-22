@@ -1,6 +1,9 @@
 package grabber
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	"grabber/models"
 	pb "grabber/pb"
@@ -34,10 +37,15 @@ var schemaReport = map[string]*Property{
 	},
 }
 
-func (g *Grabber) FetchReports(academy *models.Academy, params *DictionaryFilter) ([]*pb.Report, error) {
-	req, err := http.NewRequest(http.MethodPost, academy.Endpoint, nil)
-	req.URL.Path = "/Totals/Default.aspx"
+func (g *Grabber) FetchReports(academy *models.Academy, in *pb.ListFacultyReportsRequest) ([]*pb.Report, error) {
+	reqBody, err := json.Marshal(map[string]string{
+		cmb("Facultets"): fmt.Sprint(in.FacultyId),
+		cmb("Years"):     in.Years,
+	})
 
+	req, err := http.NewRequest(http.MethodPost, academy.Endpoint, bytes.NewBuffer(reqBody))
+	// set url
+	req.URL.Path = "/Totals/Default.aspx"
 	doc, err := g.GetDoc(req)
 
 	if err != nil {
@@ -54,7 +62,7 @@ func (g *Grabber) FetchReports(academy *models.Academy, params *DictionaryFilter
 		reports = append(reports, &pb.Report{
 			Id:         row.GetSpecificId("id", "group"),
 			Name:       row.Get("name"),
-			Year:       row.Get("year"),
+			Year:       row.GetInt32("year"),
 			Speciality: row.Get("speciality"),
 			Count:      row.GetInt32("count"),
 			Curricula:  row.Get("curricula"),
@@ -62,12 +70,4 @@ func (g *Grabber) FetchReports(academy *models.Academy, params *DictionaryFilter
 	})
 
 	return reports, nil
-}
-
-func (g *Grabber) GetFacultyReports(academy *models.Academy, facultyId int32) ([]*pb.Report, error) {
-	return g.FetchReports(academy, &DictionaryFilter{
-		Mode:   "group",
-		Filter: "facultet",
-		ID:     facultyId,
-	})
 }

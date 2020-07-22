@@ -9,7 +9,7 @@ service ReportService {
 message Report {
     int32   id            = 1;
     string  name          = 2;
-    string  year          = 3;
+    int32   year          = 3;
     string  speciality    = 4;
     int32   count         = 5;
     string  curricula     = 6;

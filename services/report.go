@@ -21,7 +21,7 @@ func (serviceImpl *ReportServiceGrpcImpl) ListFacultyReports(ctx context.Context
 	academy := ctx.Value("academy").(*models.Academy)
 	g := grabber.FromContext(serviceImpl.ctx)
 
-	reports, _ := g.GetFacultyReports(academy, in.FacultyId)
+	reports, _ := g.FetchReports(academy, in)
 
 	return &pb.ListReportsResponse{
 		Data: reports,
