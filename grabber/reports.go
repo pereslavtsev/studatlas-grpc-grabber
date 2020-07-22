@@ -56,8 +56,6 @@ func (g *Grabber) FetchReports(academy *models.Academy, in *pb.ListFacultyReport
 
 	table := doc.Find("table#ContentPage_GridGroup")
 
-	//log.Debug(table.Html())
-
 	NewGrid(table, schemaReport).EachRow(func(i int, row *Row) {
 		reports = append(reports, &pb.Report{
 			Id:         row.GetSpecificId("id", "group"),

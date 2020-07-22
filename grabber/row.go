@@ -17,7 +17,6 @@ type Row struct {
 
 func (row *Row) GetId(key string) int32 {
 	return row.GetSpecificId(key, "id")
-
 }
 
 func (row *Row) GetInt32(key string) int32 {
@@ -39,11 +38,11 @@ func (row *Row) GetSpecificId(key string, param string) int32 {
 		return -1
 	}
 
-	if u.Query().Get("group") == "" {
+	if u.Query().Get(param) == "" {
 		log.Warnf(`No ID in the url: %s`, u.RequestURI())
 	}
 
-	i, _ := strconv.ParseInt(u.Query().Get("group"), 10, 32)
+	i, _ := strconv.ParseInt(u.Query().Get(param), 10, 32)
 	return int32(i)
 }
 

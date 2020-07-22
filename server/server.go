@@ -68,6 +68,7 @@ func Init(ctx context.Context) context.Context {
 	s := grpc.NewServer(grpc.UnaryInterceptor(val.UnaryInterceptor))
 
 	pb.RegisterAcademyServiceServer(s, services.NewAcademyServiceGrpcImpl())
+	pb.RegisterCurriculaServiceServer(s, services.NewCurriculaServiceGrpcImpl(ctx))
 	pb.RegisterDivisionServiceServer(s, services.NewDivisionServiceGrpcImpl(ctx))
 	pb.RegisterFacultyServiceServer(s, services.NewFacultyServiceGrpcImpl(ctx))
 	pb.RegisterGroupServiceServer(s, services.NewGroupServiceGrpcImpl(ctx))
