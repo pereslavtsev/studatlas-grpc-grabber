@@ -74,6 +74,7 @@ func Init(ctx context.Context) context.Context {
 	pb.RegisterGroupServiceServer(s, services.NewGroupServiceGrpcImpl(ctx))
 	pb.RegisterReportServiceServer(s, services.NewReportServiceGrpcImpl(ctx))
 	pb.RegisterSpecialityServiceServer(s, services.NewSpecialityServiceGrpcImpl(ctx))
+	pb.RegisterWorkloadServiceServer(s, services.NewWorkloadServiceGrpcImpl(ctx))
 
 	// Register reflection service on gRPC server.
 	reflection.Register(s)

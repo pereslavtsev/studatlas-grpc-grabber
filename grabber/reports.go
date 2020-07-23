@@ -7,35 +7,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"grabber/models"
 	pb "grabber/pb"
+	"grabber/schemas"
 	"net/http"
 )
-
-var schemaReport = map[string]*Property{
-	"id": {
-		Type:   "id",
-		Column: "Группа",
-	},
-	"name": {
-		Type:   "text",
-		Column: "Группа",
-	},
-	"year": {
-		Type:   "numeric",
-		Column: "Курс",
-	},
-	"speciality": {
-		Type:   "speciality",
-		Column: "Специальность",
-	},
-	"count": {
-		Type:   "numeric",
-		Column: "Студентов",
-	},
-	"curricula": {
-		Type:   "text",
-		Column: "Учебный План",
-	},
-}
 
 func (g *Grabber) FetchReports(academy *models.Academy, in *pb.ListFacultyReportsRequest) ([]*pb.Report, error) {
 	reqBody, err := json.Marshal(map[string]string{
@@ -56,7 +30,7 @@ func (g *Grabber) FetchReports(academy *models.Academy, in *pb.ListFacultyReport
 
 	table := doc.Find("table#ContentPage_GridGroup")
 
-	NewGrid(table, schemaReport).EachRow(func(i int, row *Row) {
+	NewGrid(table, schemas.Report).EachRow(func(i int, row *Row) {
 		reports = append(reports, &pb.Report{
 			Id:         row.GetSpecificId("id", "group"),
 			Name:       row.Get("name"),

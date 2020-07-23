@@ -3,22 +3,17 @@ package grabber
 import (
 	"github.com/PuerkitoBio/goquery"
 	log "github.com/sirupsen/logrus"
+	"grabber/schemas"
 	"strings"
 )
-
-type Property struct {
-	Type    string
-	Column  string
-	Columns []string
-}
 
 type Grid struct {
 	ColumnsOrder map[string]int
 	Nodes        *goquery.Selection
-	Schema       map[string]*Property
+	Schema       map[string]*schemas.Property
 }
 
-func NewGrid(Nodes *goquery.Selection, Schema map[string]*Property) *Grid {
+func NewGrid(Nodes *goquery.Selection, Schema map[string]*schemas.Property) *Grid {
 	columns := Nodes.Find(".TblHead > td,th").Map(func(i int, s *goquery.Selection) string {
 		return s.Text()
 	})

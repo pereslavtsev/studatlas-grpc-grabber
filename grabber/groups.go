@@ -2,53 +2,11 @@ package grabber
 
 import (
 	"grabber/models"
+	"grabber/schemas"
 
 	log "github.com/sirupsen/logrus"
 	pb "grabber/pb"
 )
-
-var schemaGroup = map[string]*Property{
-	"id": {
-		Type:   "id",
-		Column: "Группа",
-	},
-	"name": {
-		Type:   "text",
-		Column: "Группа",
-	},
-	"year": {
-		Type:   "numeric",
-		Column: "Курс",
-	},
-	"specialityId": {
-		Type:   "id",
-		Column: "Специальность",
-	},
-	"speciality": {
-		Type:   "speciality",
-		Column: "Специальность",
-	},
-	"countAll": {
-		Type:   "numeric",
-		Column: "Всего",
-	},
-	"countCommon": {
-		Type:   "numeric",
-		Column: "ОО",
-	},
-	"countTargeted": {
-		Type:   "numeric",
-		Column: "ЦН",
-	},
-	"countSpecial": {
-		Type:   "numeric",
-		Column: "СН",
-	},
-	"curricula": {
-		Type:   "text",
-		Column: "Учебный План",
-	},
-}
 
 func (g *Grabber) FetchGroups(academy *models.Academy, params *DictionaryFilter) ([]*pb.Group, error) {
 	doc, err := g.DoDictionaryReq(academy, params)
@@ -61,7 +19,7 @@ func (g *Grabber) FetchGroups(academy *models.Academy, params *DictionaryFilter)
 
 	table := doc.Find("table#ContentPage_ucGroups_Grid")
 
-	NewGrid(table, schemaGroup).EachRow(func(i int, row *Row) {
+	NewGrid(table, schemas.Group).EachRow(func(i int, row *Row) {
 		groups = append(groups, &pb.Group{
 			Id:            row.GetId("id"),
 			Name:          row.Get("name"),

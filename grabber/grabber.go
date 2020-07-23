@@ -46,10 +46,6 @@ func FromContext(ctx context.Context) *Grabber {
 	return g
 }
 
-func cmb(name string) string {
-	return "cmb" + name
-}
-
 func (g *Grabber) Do(r *http.Request) (*http.Response, error) {
 	// log a http.Request instance
 	log.WithFields(log.Fields{

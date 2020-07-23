@@ -7,23 +7,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"grabber/models"
 	pb "grabber/pb"
+	"grabber/schemas"
 	"net/http"
 )
-
-var schemaCurricula = map[string]*Property{
-	"id": {
-		Type:    "id",
-		Columns: []string{"Имя плана", "Веб-версия"},
-	},
-	"name": {
-		Type:    "text",
-		Columns: []string{"Имя плана", "Веб-версия"},
-	},
-	"speciality": {
-		Type:   "text",
-		Column: "Специальность",
-	},
-}
 
 func (g *Grabber) GetFacultyCurricula(academy *models.Academy, in *pb.ListFacultyCurriculaRequest) ([]*pb.Curricula, error) {
 	reqBody, err := json.Marshal(map[string]string{
@@ -48,7 +34,7 @@ func (g *Grabber) GetFacultyCurricula(academy *models.Academy, in *pb.ListFacult
 		return nil, nil
 	}
 
-	NewGrid(table, schemaCurricula).EachRow(func(i int, row *Row) {
+	NewGrid(table, schemas.Curricula).EachRow(func(i int, row *Row) {
 		curricula = append(curricula, &pb.Curricula{
 			Id:         row.GetId("id"),
 			Name:       row.Get("name"),

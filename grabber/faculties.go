@@ -3,36 +3,10 @@ package grabber
 import (
 	"grabber/models"
 	pb "grabber/pb"
+	"grabber/schemas"
 
 	log "github.com/sirupsen/logrus"
 )
-
-var schema = map[string]*Property{
-	"id": {
-		Type:    "id",
-		Columns: []string{"Факультет", "Институт"},
-	},
-	"name": {
-		Type:    "text",
-		Columns: []string{"Факультет", "Институт"},
-	},
-	"abbreviation": {
-		Type:   "text",
-		Column: "Сокращение",
-	},
-	"head": {
-		Type:   "text",
-		Column: "Декан",
-	},
-	"phone": {
-		Type:   "text",
-		Column: "Телефон",
-	},
-	"room": {
-		Type:   "text",
-		Column: "Аудитория",
-	},
-}
 
 func (g *Grabber) FetchFaculties(academy *models.Academy, params *DictionaryFilter) ([]*pb.Faculty, error) {
 	doc, err := g.DoDictionaryReq(academy, params)
@@ -45,7 +19,7 @@ func (g *Grabber) FetchFaculties(academy *models.Academy, params *DictionaryFilt
 
 	table := doc.Find("table#ContentPage_ucFacultets_Grid")
 
-	NewGrid(table, schema).EachRow(func(i int, row *Row) {
+	NewGrid(table, schemas.Faculty).EachRow(func(i int, row *Row) {
 		faculties = append(faculties, &pb.Faculty{
 			Id:           row.GetId("id"),
 			Name:         row.Get("name"),

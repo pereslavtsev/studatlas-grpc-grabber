@@ -3,48 +3,10 @@ package grabber
 import (
 	"grabber/models"
 	pb "grabber/pb"
+	"grabber/schemas"
 
 	log "github.com/sirupsen/logrus"
 )
-
-var schemaSpeciality = map[string]*Property{
-	"id": {
-		Type:   "id",
-		Column: "Специальность",
-	},
-	"shortName": {
-		Type:   "text",
-		Column: "Специальность",
-	},
-	"name": {
-		Type:   "text",
-		Column: "Название Специальности",
-	},
-	"facultyId": {
-		Type:   "id",
-		Column: "Факультет",
-	},
-	"faculty": {
-		Type:   "text",
-		Column: "Факультет",
-	},
-	"divisionId": {
-		Type:   "id",
-		Column: "Кафедра",
-	},
-	"division": {
-		Type:   "text",
-		Column: "Кафедра",
-	},
-	"code": {
-		Type:   "text",
-		Column: "Шифр",
-	},
-	"qualification": {
-		Type:   "text",
-		Column: "Квалификация",
-	},
-}
 
 func (g *Grabber) FetchSpecialities(academy *models.Academy, params *DictionaryFilter) ([]*pb.Speciality, error) {
 	doc, err := g.DoDictionaryReq(academy, params)
@@ -57,7 +19,7 @@ func (g *Grabber) FetchSpecialities(academy *models.Academy, params *DictionaryF
 
 	table := doc.Find("table#ContentPage_ucSpets_Grid")
 
-	NewGrid(table, schemaSpeciality).EachRow(func(i int, row *Row) {
+	NewGrid(table, schemas.Speciality).EachRow(func(i int, row *Row) {
 		specialities = append(specialities, &pb.Speciality{
 			Id:            row.GetId("id"),
 			ShortName:     row.Get("shortName"),
