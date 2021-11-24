@@ -2,6 +2,7 @@ package main
 
 import (
 	"grabber/config"
+	"grabber/grabber"
 	"os"
 
 	"grabber/database"
@@ -10,7 +11,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
-
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
@@ -29,6 +29,7 @@ func init() {
 func main() {
 	ctx := config.Init(context.Background())
 	ctx = database.Init(ctx)
+	ctx = grabber.Init(ctx)
 	ctx = server.Init(ctx)
 
 	s := server.FromContext(ctx)

@@ -45,7 +45,7 @@ func (db *DB) GetAcademy(id string) (*m.Academy, error) {
 		"_id": objID,
 	}).Decode(&academy)
 
-	if err != nil {
+	if err != nil || academy == nil {
 		return nil, err
 	}
 

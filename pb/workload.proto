@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package grabber;
+
+service WorkloadService {
+    rpc GetGroupWorkload (GetGroupWorkloadRequest) returns (GetGroupWorkloadResponse) {}
+    rpc ListGroupsWorkloads (ListGroupsWorkloadsRequest) returns (ListGroupsWorkloadsResponse) {}
+    rpc ListTeachersWorkloads (ListTeachersWorkloadsRequest) returns (ListTeachersWorkloadsResponse) {}
+}
+
+message Workload {
+    string subject = 1;
+    string session = 2;
+    int32 hours = 3;
+    string teacher = 4;
+    string lesionsType = 5;
+    string controlsType = 6;
+}
+
+message GetGroupWorkloadRequest {
+    int32 group_id = 1;
+    string control_type = 2;
+    string session = 3;
+    int32 page = 4;
+}
+
+message GetGroupWorkloadResponse {
+    repeated Workload data = 1;
+}
+
+// groups
+
+message GroupWorkloadItem {
+    int32 year = 1;
+    string group = 2;
+    int32 groupId = 3;
+    string speciality = 4;
+    int32 count_all = 5;
+    string curriculum = 6;
+}
+
+message ListGroupsWorkloadsRequest {
+    int32 faculty_id = 1;
+    string years = 2;
+    int32 page = 3;
+}
+
+message ListGroupsWorkloadsResponse {
+    repeated GroupWorkloadItem data = 1;
+}
+
+// teachers
+
+message TeacherWorkloadItem {
+    string teacher = 1;
+    string teacherQuery = 2;
+}
+
+message ListTeachersWorkloadsRequest {
+    int32 division_id = 1;
+    string years = 2;
+    int32 page = 3;
+}
+
+message ListTeachersWorkloadsResponse {
+    repeated TeacherWorkloadItem data = 1;
+}
